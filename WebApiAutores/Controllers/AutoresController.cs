@@ -22,18 +22,18 @@ namespace WebApiAutores.Controllers
         [HttpGet]
         public async Task<ActionResult<List<Autor>>> Get()
         {
-            /*Util util = new Util();
-            List<Autor> listaAutores = util.GetAutors(20);
-            return listaAutores;*/
             return await context.Autores.ToListAsync();
         }
 
         // GET api/<AutoresController>/5
         [HttpGet("{id}")]
-        public ActionResult<Autor> Get(int id)
+        public async Task<ActionResult<Autor>> Get(int id)
         {
-            Util util = new Util();
-            Autor autor = util.GetAutor(id);
+            Autor autor = await context.Autores.FindAsync(id);
+            if (autor == null)
+            {
+                return NotFound($"No existe el autor con Id:{id} en la base de datos");
+            }
             return autor;
         }
 
@@ -47,15 +47,38 @@ namespace WebApiAutores.Controllers
         }
 
         // PUT api/<AutoresController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult> Put(int id, [FromBody] Autor autor)
         {
+            if(autor.Id != id)
+            {
+                return BadRequest("El Id enviado no coincide con el Id del autor");
+            }
+
+            bool existeAutor = await context.Autores.AnyAsync(autor => autor.Id == id);
+            if (!existeAutor)
+            {
+                return NotFound($"No existe el autor con Id:{id} en la base de datos");
+            }
+
+            context.Update(autor);
+            await context.SaveChangesAsync();
+            return Ok();
         }
 
         // DELETE api/<AutoresController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult> Delete(int id)
         {
+            bool existeAutor = await context.Autores.AnyAsync(autor => autor.Id == id);
+            if(!existeAutor)
+            {
+                return NotFound($"No existe el autor con Id:{id} en la base de datos");
+            }
+
+            context.Remove(new Autor() { Id = id });
+            await context.SaveChangesAsync();
+            return Ok();
         }
     }
 }
