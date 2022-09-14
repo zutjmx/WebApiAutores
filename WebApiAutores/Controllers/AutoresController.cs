@@ -37,6 +37,13 @@ namespace WebApiAutores.Controllers
             return autor;
         }
 
+        // GET api/<AutoresController>/primerautor
+        [HttpGet("primerautor")]
+        public async Task<ActionResult<Autor>> GetPrimerAutor()
+        {
+            return await context.Autores.FirstOrDefaultAsync();
+        }
+
         // POST api/<AutoresController>
         [HttpPost]
         public async Task<ActionResult> Post([FromBody] Autor autor)
