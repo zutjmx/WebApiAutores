@@ -18,21 +18,35 @@ namespace WebApiAutores.Controllers
             this.context = context;
         }
 
-        // GET: api/<AutoresController>
-        [HttpGet]
+        [HttpGet] // GET: api/<AutoresController>
+        [HttpGet("listado")] // GET: api/<AutoresController>/listado
+        [HttpGet("/listado")] // GET: listado
         public async Task<ActionResult<List<Autor>>> Get()
         {
             return await context.Autores.Include(x => x.Libros).ToListAsync();
         }
 
         // GET api/<AutoresController>/5
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public async Task<ActionResult<Autor>> Get(int id)
         {
-            Autor autor = await context.Autores.FindAsync(id);
+            //Autor autor = await context.Autores.FindAsync(id);
+            Autor autor = await context.Autores.FirstOrDefaultAsync(x => x.Id == id);
             if (autor == null)
             {
                 return NotFound($"No existe el autor con Id:{id} en la base de datos");
+            }
+            return autor;
+        }
+
+        // GET api/<AutoresController>/nombre
+        [HttpGet("{nombre}")]
+        public async Task<ActionResult<Autor>> Get(string nombre)
+        {
+            Autor autor = await context.Autores.FirstOrDefaultAsync(x => x.Nombre.ToLower().Contains(nombre.ToLower()));
+            if (autor == null)
+            {
+                return NotFound($"No existe el autor con Nombre:{nombre} en la base de datos");
             }
             return autor;
         }
