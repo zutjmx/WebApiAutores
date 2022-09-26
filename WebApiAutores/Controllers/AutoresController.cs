@@ -28,7 +28,7 @@ namespace WebApiAutores.Controllers
 
         // GET api/<AutoresController>/5
         [HttpGet("{id:int}")]
-        public async Task<ActionResult<Autor>> Get(int id)
+        public async Task<ActionResult<Autor>> Get([FromRoute] int id)
         {
             //Autor autor = await context.Autores.FindAsync(id);
             Autor autor = await context.Autores.FirstOrDefaultAsync(x => x.Id == id);
@@ -41,7 +41,7 @@ namespace WebApiAutores.Controllers
 
         // GET api/<AutoresController>/nombre
         [HttpGet("{nombre}")]
-        public async Task<ActionResult<Autor>> Get(string nombre)
+        public async Task<ActionResult<Autor>> Get([FromRoute] string nombre)
         {
             Autor autor = await context.Autores.FirstOrDefaultAsync(x => x.Nombre.ToLower().Contains(nombre.ToLower()));
             if (autor == null)
@@ -51,9 +51,13 @@ namespace WebApiAutores.Controllers
             return autor;
         }
 
-        // GET api/<AutoresController>/primerautor
+        // GET api/<AutoresController>/primerautor?nombre=Jesús&apellidos=Zúñiga Trejo
         [HttpGet("primerautor")]
-        public async Task<ActionResult<Autor>> GetPrimerAutor()
+        public async Task<ActionResult<Autor>> GetPrimerAutor(
+            [FromHeader] int ValorHeader, 
+            [FromQuery] string Nombre,
+            [FromQuery] string Apellidos
+        )
         {
             return await context.Autores.FirstOrDefaultAsync();
         }
@@ -69,7 +73,7 @@ namespace WebApiAutores.Controllers
 
         // PUT api/<AutoresController>/5
         [HttpPut("{id:int}")]
-        public async Task<ActionResult> Put(int id, [FromBody] Autor autor)
+        public async Task<ActionResult> Put([FromRoute] int id, [FromBody] Autor autor)
         {
             if(autor.Id != id)
             {
@@ -89,7 +93,7 @@ namespace WebApiAutores.Controllers
 
         // DELETE api/<AutoresController>/5
         [HttpDelete("{id:int}")]
-        public async Task<ActionResult> Delete(int id)
+        public async Task<ActionResult> Delete([FromRoute] int id)
         {
             bool existeAutor = await context.Autores.AnyAsync(autor => autor.Id == id);
             if(!existeAutor)
