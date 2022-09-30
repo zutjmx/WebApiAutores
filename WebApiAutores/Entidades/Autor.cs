@@ -13,23 +13,23 @@ namespace WebApiAutores.Entidades
         //[PrimeraLetraMayuscula]
         public string Nombre { get; set; }
 
-        [Range(18,120,ErrorMessage ="La {0} debe de estar en el rango [{1}, {2}]")]
-        [NotMapped]
-        public int Edad { get; set; }
+        //[Range(18,120,ErrorMessage ="La {0} debe de estar en el rango [{1}, {2}]")]
+        //[NotMapped]
+        //public int Edad { get; set; }
 
-        [CreditCard(ErrorMessage ="Se requiere un {0} de TDC válido")]
-        [NotMapped]
-        public string TarjetaDeCredito { get; set; }
+        //[CreditCard(ErrorMessage ="Se requiere un {0} de TDC válido")]
+        //[NotMapped]
+        //public string TarjetaDeCredito { get; set; }
         
-        [Url(ErrorMessage = "Se requiere una {0} válida")]
-        [NotMapped]
-        public string UrlAutor { get; set; }
+        //[Url(ErrorMessage = "Se requiere una {0} válida")]
+        //[NotMapped]
+        //public string UrlAutor { get; set; }
 
-        [NotMapped]
-        public int Menor { get; set; }
+        //[NotMapped]
+        //public int Menor { get; set; }
 
-        [NotMapped]
-        public int Mayor { get; set; }
+        //[NotMapped]
+        //public int Mayor { get; set; }
         public List<Libro> Libros { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
@@ -46,13 +46,13 @@ namespace WebApiAutores.Entidades
                 }
             }
 
-            if (Menor > Mayor)
-            {
-                yield return new ValidationResult(
-                        "El valor del campo Menor no puede ser mayor al campo Mayor",
-                        new string[] { nameof(Menor) }
-                    );
-            }
+            //if (Menor > Mayor)
+            //{
+            //    yield return new ValidationResult(
+            //            "El valor del campo Menor no puede ser mayor al campo Mayor",
+            //            new string[] { nameof(Menor) }
+            //        );
+            //}
 
         }
     }
