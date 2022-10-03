@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using WebApiAutores.Common;
 using WebApiAutores.Entidades;
+using WebApiAutores.Servicios;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -12,10 +13,40 @@ namespace WebApiAutores.Controllers
     public class AutoresController : ControllerBase
     {
         private readonly ApplicationDbContext context;
+        private readonly IServicio servicio;
+        private readonly ServicioTransient servicioTransient;
+        private readonly ServicioScoped servicioScoped;
+        private readonly ServicioSingleton servicioSingleton;
+        private readonly ILogger<AutoresController> logger;
 
-        public AutoresController(ApplicationDbContext context)
+        public AutoresController(
+            ApplicationDbContext context, 
+            IServicio servicio,
+            ServicioTransient servicioTransient,
+            ServicioScoped servicioScoped,
+            ServicioSingleton servicioSingleton,
+            ILogger<AutoresController> logger
+        )
         {
             this.context = context;
+            this.servicio = servicio;
+            this.servicioTransient = servicioTransient;
+            this.servicioScoped = servicioScoped;
+            this.servicioSingleton = servicioSingleton;
+            this.logger = logger;
+        }
+
+        [HttpGet("GUID")]
+        public ActionResult GetGuids()
+        {
+            return Ok(new {
+                        AutoresController_Transient = servicioTransient.Guid,
+                        ServicioA_Transient = servicio.GetTransient(),
+                        AutoresController_Scoped = servicioScoped.Guid,
+                        ServicioA_Scoped = servicio.GetScoped(),
+                        AutoresController_Singleton = servicioSingleton.Guid,
+                        ServicioA_Sigleton = servicio.GetSingleton()
+                    });
         }
 
         [HttpGet] // GET: api/<AutoresController>
@@ -23,6 +54,8 @@ namespace WebApiAutores.Controllers
         [HttpGet("/listado")] // GET: listado
         public async Task<ActionResult<List<Autor>>> Get()
         {
+            this.logger.LogInformation("Obteniendo listado de autores");
+            servicio.RealizarTarea();
             return await context.Autores.Include(x => x.Libros).ToListAsync();
         }
 
