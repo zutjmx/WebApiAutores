@@ -38,8 +38,39 @@ namespace WebApiAutores
             services.AddSwaggerGen();
         }
 
-        public void Configure(IApplicationBuilder application, IWebHostEnvironment hostEnvironment)
+        public void Configure(IApplicationBuilder application, IWebHostEnvironment hostEnvironment, ILogger<Startup> logger)
         {
+
+            //Prueba de middleware ini
+            application.Use(async (contexto, siguiente) =>
+            {
+                using (var ms = new MemoryStream())
+                {
+                    var cuerpoOriginalRespuesta = contexto.Response.Body;
+                    contexto.Response.Body = ms;
+
+                    await siguiente.Invoke();
+
+                    ms.Seek(0, SeekOrigin.Begin);
+                    string respuesta = new StreamReader(ms).ReadToEnd();
+                    ms.Seek(0, SeekOrigin.Begin);
+
+                    await ms.CopyToAsync(cuerpoOriginalRespuesta);
+                    contexto.Response.Body = cuerpoOriginalRespuesta;
+
+                    logger.LogInformation(respuesta);
+                }
+            });
+
+            application.Map("/rutaUno", application =>
+            {
+                application.Run(async contexto =>
+                {
+                    await contexto.Response.WriteAsync("Se intercepta la tubería");
+                });
+            });
+            //Prueba de middleware fin
+
             // Configure the HTTP request pipeline.
             if (hostEnvironment.IsDevelopment())
             {
