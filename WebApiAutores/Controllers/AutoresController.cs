@@ -1,7 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApiAutores.Common;
 using WebApiAutores.Entidades;
+using WebApiAutores.Filtros;
 using WebApiAutores.Servicios;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -37,6 +39,8 @@ namespace WebApiAutores.Controllers
         }
 
         [HttpGet("GUID")]
+        //[ResponseCache(Duration = 10)] //Respuesta se guarda en cache, para ahorrar tiempo de procesamiento.
+        [ServiceFilter(typeof(MiFiltroDeAccion))]
         public ActionResult GetGuids()
         {
             return Ok(new {
@@ -52,9 +56,14 @@ namespace WebApiAutores.Controllers
         [HttpGet] // GET: api/<AutoresController>
         [HttpGet("listado")] // GET: api/<AutoresController>/listado
         [HttpGet("/listado")] // GET: listado
+        //[ResponseCache(Duration = 10)] //Respuesta se guarda en cache, para ahorrar tiempo de procesamiento.
+        //[Authorize] //Restringe el acceso a este End Point
+        [ServiceFilter(typeof(MiFiltroDeAccion))]
         public async Task<ActionResult<List<Autor>>> Get()
         {
+            //throw new NotImplementedException(); //Para probar filtro de excepción
             this.logger.LogInformation("Obteniendo listado de autores");
+            this.logger.LogWarning("Mensaje de ejemplo para Warning");
             servicio.RealizarTarea();
             return await context.Autores.Include(x => x.Libros).ToListAsync();
         }
