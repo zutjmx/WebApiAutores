@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System.Text.Json.Serialization;
+using WebApiAutores.Middlewares;
 using WebApiAutores.Servicios;
 
 namespace WebApiAutores
@@ -42,25 +43,8 @@ namespace WebApiAutores
         {
 
             //Prueba de middleware ini
-            application.Use(async (contexto, siguiente) =>
-            {
-                using (var ms = new MemoryStream())
-                {
-                    var cuerpoOriginalRespuesta = contexto.Response.Body;
-                    contexto.Response.Body = ms;
-
-                    await siguiente.Invoke();
-
-                    ms.Seek(0, SeekOrigin.Begin);
-                    string respuesta = new StreamReader(ms).ReadToEnd();
-                    ms.Seek(0, SeekOrigin.Begin);
-
-                    await ms.CopyToAsync(cuerpoOriginalRespuesta);
-                    contexto.Response.Body = cuerpoOriginalRespuesta;
-
-                    logger.LogInformation(respuesta);
-                }
-            });
+            //application.UseMiddleware<LoguearRespuestaHTTPMiddleware>();
+            application.UseLoguearRespuestaHTTP();
 
             application.Map("/rutaUno", application =>
             {
