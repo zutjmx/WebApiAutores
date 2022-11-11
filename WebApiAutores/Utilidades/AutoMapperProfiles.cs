@@ -8,8 +8,11 @@ namespace WebApiAutores.Utilidades
     {
         public AutoMapperProfiles()
         {
-            CreateMap<AutorCreacionDto, Autor>();
+            CreateMap<AutorCreacionDto, Autor>();            
             CreateMap<Autor, AutorDto>();
+
+            CreateMap<LibroCreacionDto, Libro>();
+            CreateMap<Libro, LibroDto>();
         }
     }
 }
