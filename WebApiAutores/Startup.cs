@@ -3,7 +3,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System.Text.Json.Serialization;
 using WebApiAutores.Middlewares;
-using WebApiAutores.Servicios;
 using WebApiAutores.Filtros;
 
 namespace WebApiAutores
@@ -32,18 +31,6 @@ namespace WebApiAutores
                 );
 
             //Inyección de dependencias ini
-            services.AddTransient<IServicio,ServicioA>();
-
-            services.AddTransient<ServicioTransient>();
-            services.AddScoped<ServicioScoped>();
-            services.AddSingleton<ServicioSingleton>();
-
-            services.AddTransient<MiFiltroDeAccion>();
-
-            services.AddHostedService<EscribirEnArchivo>();
-
-            services.AddResponseCaching(); //Servicio: Middleware del cache.
-
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(); //Autenticación
             //Inyección de dependencias fin
 
@@ -59,13 +46,6 @@ namespace WebApiAutores
             //application.UseMiddleware<LoguearRespuestaHTTPMiddleware>();
             application.UseLoguearRespuestaHTTP();
 
-            application.Map("/rutaUno", application =>
-            {
-                application.Run(async contexto =>
-                {
-                    await contexto.Response.WriteAsync("Se intercepta la tubería");
-                });
-            });
             //Prueba de middleware fin
 
             // Configure the HTTP request pipeline.
@@ -77,7 +57,7 @@ namespace WebApiAutores
 
             application.UseHttpsRedirection();
             application.UseRouting();
-            application.UseResponseCaching(); //Filtro: Middleware del cache.
+            
             application.UseAuthorization();
 
             application.UseEndpoints(endpoints =>

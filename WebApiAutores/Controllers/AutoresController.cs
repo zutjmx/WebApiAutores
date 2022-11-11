@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using WebApiAutores.Common;
 using WebApiAutores.Entidades;
 using WebApiAutores.Filtros;
-using WebApiAutores.Servicios;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -15,57 +14,19 @@ namespace WebApiAutores.Controllers
     public class AutoresController : ControllerBase
     {
         private readonly ApplicationDbContext context;
-        private readonly IServicio servicio;
-        private readonly ServicioTransient servicioTransient;
-        private readonly ServicioScoped servicioScoped;
-        private readonly ServicioSingleton servicioSingleton;
-        private readonly ILogger<AutoresController> logger;
+        
 
         public AutoresController(
-            ApplicationDbContext context, 
-            IServicio servicio,
-            ServicioTransient servicioTransient,
-            ServicioScoped servicioScoped,
-            ServicioSingleton servicioSingleton,
-            ILogger<AutoresController> logger
+            ApplicationDbContext context
         )
         {
             this.context = context;
-            this.servicio = servicio;
-            this.servicioTransient = servicioTransient;
-            this.servicioScoped = servicioScoped;
-            this.servicioSingleton = servicioSingleton;
-            this.logger = logger;
-        }
-
-        [HttpGet("GUID")]
-        //[ResponseCache(Duration = 10)] //Respuesta se guarda en cache, para ahorrar tiempo de procesamiento.
-        [ServiceFilter(typeof(MiFiltroDeAccion))]
-        public ActionResult GetGuids()
-        {
-            return Ok(new {
-                        AutoresController_Transient = servicioTransient.Guid,
-                        ServicioA_Transient = servicio.GetTransient(),
-                        AutoresController_Scoped = servicioScoped.Guid,
-                        ServicioA_Scoped = servicio.GetScoped(),
-                        AutoresController_Singleton = servicioSingleton.Guid,
-                        ServicioA_Sigleton = servicio.GetSingleton()
-                    });
         }
 
         [HttpGet] // GET: api/<AutoresController>
-        [HttpGet("listado")] // GET: api/<AutoresController>/listado
-        [HttpGet("/listado")] // GET: listado
-        //[ResponseCache(Duration = 10)] //Respuesta se guarda en cache, para ahorrar tiempo de procesamiento.
-        //[Authorize] //Restringe el acceso a este End Point
-        [ServiceFilter(typeof(MiFiltroDeAccion))]
         public async Task<ActionResult<List<Autor>>> Get()
         {
-            //throw new NotImplementedException(); //Para probar filtro de excepción
-            this.logger.LogInformation("Obteniendo listado de autores");
-            this.logger.LogWarning("Mensaje de ejemplo para Warning");
-            servicio.RealizarTarea();
-            return await context.Autores.Include(x => x.Libros).ToListAsync();
+            return await context.Autores.ToListAsync();
         }
 
         // GET api/<AutoresController>/5
@@ -91,17 +52,6 @@ namespace WebApiAutores.Controllers
                 return NotFound($"No existe el autor con Nombre:{nombre} en la base de datos");
             }
             return autor;
-        }
-
-        // GET api/<AutoresController>/primerautor?nombre=Jesús&apellidos=Zúñiga Trejo
-        [HttpGet("primerautor")]
-        public async Task<ActionResult<Autor>> GetPrimerAutor(
-            [FromHeader] int ValorHeader, 
-            [FromQuery] string Nombre,
-            [FromQuery] string Apellidos
-        )
-        {
-            return await context.Autores.FirstOrDefaultAsync();
         }
 
         // POST api/<AutoresController>

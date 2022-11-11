@@ -28,18 +28,19 @@ namespace WebApiAutores.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<Libro>> Get(int id)
         {
-            return await this.dbContext.Libros.Include(x => x.Autor).FirstOrDefaultAsync(libro => libro.Id == id);
+            //return await this.dbContext.Libros.Include(x => x.Autor).FirstOrDefaultAsync(libro => libro.Id == id);
+            return await this.dbContext.Libros.FirstOrDefaultAsync(libro => libro.Id == id);
         }
 
         // POST api/<LibrosController>
         [HttpPost]
         public async Task<ActionResult> Post([FromBody] Libro libro)
         {
-            bool existeAutor = await dbContext.Autores.AnyAsync(autor => autor.Id == libro.AutorId);
-            if (!existeAutor)
-            {
-                return BadRequest($"No existe un autor con id {libro.AutorId}");
-            }
+            //bool existeAutor = await dbContext.Autores.AnyAsync(autor => autor.Id == libro.AutorId);
+            //if (!existeAutor)
+            //{
+            //    return BadRequest($"No existe un autor con id {libro.AutorId}");
+            //}
             this.dbContext.Add(libro);
             await this.dbContext.SaveChangesAsync();
             return Ok();
