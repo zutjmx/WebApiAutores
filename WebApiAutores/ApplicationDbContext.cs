@@ -11,5 +11,6 @@ namespace WebApiAutores
 
         public DbSet<Autor> Autores { get; set; }
         public DbSet<Libro> Libros { get; set; } //Opcional
+        public DbSet<Comentario> Comentarios { get; set; }
     }
 }
