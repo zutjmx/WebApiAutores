@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using WebApiAutores.DTOs;
 using WebApiAutores.Entidades;
 
@@ -33,7 +34,10 @@ namespace WebApiAutores.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<LibroDto>> Get(int id)
         {
-            var libro = await this.dbContext.Libros.FirstOrDefaultAsync(libro => libro.Id == id);
+            var libro = await this.dbContext.Libros
+                .Include(libroBD => libroBD.Comentarios)
+                .FirstOrDefaultAsync(libro => libro.Id == id);
+
             return mapper.Map<LibroDto>(libro);
         }
 
@@ -41,12 +45,32 @@ namespace WebApiAutores.Controllers
         [HttpPost]
         public async Task<ActionResult> Post([FromBody] LibroCreacionDto libroCreacionDto)
         {
-            //bool existeAutor = await dbContext.Autores.AnyAsync(autor => autor.Id == libro.AutorId);
-            //if (!existeAutor)
-            //{
-            //    return BadRequest($"No existe un autor con id {libro.AutorId}");
-            //}
+
+            if(libroCreacionDto.AutoresIds == null)
+            {
+                return BadRequest("No se puede crear un libro sin autores");
+            }
+
+            var autoresIds = await dbContext.Autores
+                .Where(autorDB => libroCreacionDto.AutoresIds.Contains(autorDB.Id))
+                .Select(x => x.Id)
+                .ToListAsync();
+
+            if(libroCreacionDto.AutoresIds.Count != autoresIds.Count)
+            {
+                return BadRequest("No existe uno de los autores enviados");
+            }
+
             var libro = mapper.Map<Libro>(libroCreacionDto);
+
+            if(libro.AutoresLibros != null)
+            {
+                for (int i = 0; i < libro.AutoresLibros.Count; i++)
+                {
+                    libro.AutoresLibros[i].Orden = i;
+                }
+            }
+
             this.dbContext.Add(libro);
             await this.dbContext.SaveChangesAsync();
             return Ok();
