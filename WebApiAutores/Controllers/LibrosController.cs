@@ -35,8 +35,12 @@ namespace WebApiAutores.Controllers
         public async Task<ActionResult<LibroDto>> Get(int id)
         {
             var libro = await this.dbContext.Libros
+                .Include(libroDB => libroDB.AutoresLibros)
+                .ThenInclude(autorLibroDB => autorLibroDB.Autor)
                 .Include(libroBD => libroBD.Comentarios)
                 .FirstOrDefaultAsync(libro => libro.Id == id);
+
+            libro.AutoresLibros = libro.AutoresLibros.OrderBy(x => x.Orden).ToList();
 
             return mapper.Map<LibroDto>(libro);
         }
