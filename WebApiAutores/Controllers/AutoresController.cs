@@ -39,11 +39,16 @@ namespace WebApiAutores.Controllers
         [HttpGet("{id:int}")]
         public async Task<ActionResult<AutorDto>> Get([FromRoute] int id)
         {
-            var autor = await context.Autores.FirstOrDefaultAsync(autorBD => autorBD.Id == id);
+            var autor = await context.Autores
+                .Include(autorDB => autorDB.AutoresLibros)
+                .ThenInclude(autorLibroDB => autorLibroDB.Libro)
+                .FirstOrDefaultAsync(autorBD => autorBD.Id == id);
+
             if (autor == null)
             {
                 return NotFound($"No existe el autor con Id:{id} en la base de datos");
             }
+
             return mapper.Map<AutorDto>(autor);
         }
 
