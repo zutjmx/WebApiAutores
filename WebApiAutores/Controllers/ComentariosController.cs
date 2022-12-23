@@ -38,12 +38,19 @@ namespace WebApiAutores.Controllers
             return mapper.Map<List<ComentarioDto>>(comentarios);
         }
 
-        //// GET api/<ComentariosController>/5
-        //[HttpGet("{id}")]
-        //public string Get(int id)
-        //{
-        //    return "value";
-        //}
+        // GET api/<ComentariosController>/5
+        [HttpGet("{id}",Name = "obtenerComentario")]
+        public async Task<ActionResult<ComentarioDto>> GetPorId(int id)
+        {
+            var comentario = await context.Comentarios.FirstOrDefaultAsync(comentarioDB => comentarioDB.Id == id);
+            
+            if (comentario == null)
+            {
+                return NotFound($"No existe el comentario con ID:{id}");
+            }
+
+            return mapper.Map<ComentarioDto>(comentario);
+        }
 
         // POST api/<ComentariosController>
         [HttpPost]
@@ -58,8 +65,10 @@ namespace WebApiAutores.Controllers
             comentario.LibroId = libroId;
             context.Add(comentario);
             await context.SaveChangesAsync();
-            return Ok(comentario);
-            //return Ok();
+
+            var comentarioDto = mapper.Map<ComentarioDto>(comentario);
+            
+            return CreatedAtRoute("obtenerComentario",new {id = comentario.Id, libroId }, comentarioDto);            
         }
 
         // PUT api/<ComentariosController>/5
