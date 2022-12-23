@@ -50,7 +50,7 @@ namespace WebApiAutores.Controllers
         public async Task<ActionResult> Post([FromBody] LibroCreacionDto libroCreacionDto)
         {
 
-            if(libroCreacionDto.AutoresIds == null)
+            if (libroCreacionDto.AutoresIds == null)
             {
                 return BadRequest("No se puede crear un libro sin autores");
             }
@@ -60,33 +60,43 @@ namespace WebApiAutores.Controllers
                 .Select(x => x.Id)
                 .ToListAsync();
 
-            if(libroCreacionDto.AutoresIds.Count != autoresIds.Count)
+            if (libroCreacionDto.AutoresIds.Count != autoresIds.Count)
             {
                 return BadRequest("No existe uno de los autores enviados");
             }
 
             var libro = mapper.Map<Libro>(libroCreacionDto);
 
-            if(libro.AutoresLibros != null)
-            {
-                for (int i = 0; i < libro.AutoresLibros.Count; i++)
-                {
-                    libro.AutoresLibros[i].Orden = i;
-                }
-            }
+            AplicarOrdenLibros(libro);
 
             this.dbContext.Add(libro);
             await this.dbContext.SaveChangesAsync();
 
             var libroDto = mapper.Map<LibroDto>(libro);
 
-            return CreatedAtRoute("obtenerLibro",new {id = libro.Id}, libroDto);
+            return CreatedAtRoute("obtenerLibro", new { id = libro.Id }, libroDto);
         }
 
         // PUT api/<LibrosController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult> Put(int id, [FromBody] LibroCreacionDto libroCreacionDto)
         {
+            var libroDB = await dbContext.Libros
+                .Include(x => x.AutoresLibros)
+                .FirstOrDefaultAsync(x => x.Id == id);
+            
+            if (libroDB == null)
+            {
+                return NotFound($"No existe el libro con ID:{id}");
+            }
+
+            libroDB = mapper.Map(libroCreacionDto, libroDB);
+
+            AplicarOrdenLibros(libroDB);
+
+            await this.dbContext.SaveChangesAsync();
+
+            return NoContent();
         }
 
         // DELETE api/<LibrosController>/5
@@ -94,5 +104,17 @@ namespace WebApiAutores.Controllers
         public void Delete(int id)
         {
         }
+
+        private static void AplicarOrdenLibros(Libro libro)
+        {
+            if (libro.AutoresLibros != null)
+            {
+                for (int i = 0; i < libro.AutoresLibros.Count; i++)
+                {
+                    libro.AutoresLibros[i].Orden = i;
+                }
+            }
+        }
+
     }
 }

@@ -72,9 +72,29 @@ namespace WebApiAutores.Controllers
         }
 
         // PUT api/<ComentariosController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult> Put(int libroId, int id, [FromBody] ComentarioCreacionDto comentarioCreacionDto)
         {
+            var existeLibro = await context.Libros.AnyAsync(libroDB => libroDB.Id == libroId);
+            if (!existeLibro)
+            {
+                return NotFound($"No existe el libro con ID: {libroId}");
+            }
+
+            var existeComentario = await context.Comentarios.AnyAsync(comentarioDB => comentarioDB.Id == id);
+            if(!existeComentario)
+            {
+                return NotFound($"No existe el comentario con ID: {id}");
+            }
+
+            var comentario = mapper.Map<Comentario>(comentarioCreacionDto);
+            comentario.Id= id;
+            comentario.LibroId = libroId;
+
+            context.Update(comentario);
+            await context.SaveChangesAsync();
+
+            return NoContent();
         }
 
         // DELETE api/<ComentariosController>/5
