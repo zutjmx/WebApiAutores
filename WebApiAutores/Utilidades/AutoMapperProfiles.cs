@@ -8,14 +8,18 @@ namespace WebApiAutores.Utilidades
     {
         public AutoMapperProfiles()
         {
-            CreateMap<AutorCreacionDto, Autor>();            
-            CreateMap<Autor, AutorDto>()
+            CreateMap<AutorCreacionDto, Autor>();
+            CreateMap<Autor, AutorDto>();
+
+            CreateMap<Autor, AutorDtoConLibros>()
                 .ForMember(autorDto => autorDto.Libros, opciones => opciones.MapFrom(MapAutorDtoLibros));
 
             CreateMap<LibroCreacionDto, Libro>()
                 .ForMember(libro => libro.AutoresLibros, opciones => opciones.MapFrom(MapAutoresLibros));
 
-            CreateMap<Libro, LibroDto>()
+            CreateMap<Libro, LibroDto>();
+
+            CreateMap<Libro, LibroDtoConAutores>()
                 .ForMember(libroDto => libroDto.Autores, opciones => opciones.MapFrom(MapLibroDtoAutores));
             
             CreateMap<ComentarioCreacionDto, Comentario>();
