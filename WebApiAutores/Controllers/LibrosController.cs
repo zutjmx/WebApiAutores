@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -39,6 +40,11 @@ namespace WebApiAutores.Controllers
                 .ThenInclude(autorLibroDB => autorLibroDB.Autor)
                 .Include(libroBD => libroBD.Comentarios)
                 .FirstOrDefaultAsync(libro => libro.Id == id);
+
+            if(libro== null)
+            {
+                return NotFound($"No existe el ibro con ID:{id}");
+            }
 
             libro.AutoresLibros = libro.AutoresLibros.OrderBy(x => x.Orden).ToList();
 
@@ -99,10 +105,51 @@ namespace WebApiAutores.Controllers
             return NoContent();
         }
 
-        // DELETE api/<LibrosController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+        [HttpPatch("{id:int}")]
+        public async Task<ActionResult> Patch(int id, JsonPatchDocument<LibroPatchDto> jsonPatchDocument)
         {
+            if (jsonPatchDocument == null)
+            {
+                return BadRequest();
+            }
+
+            var libroBD = await dbContext.Libros.FirstOrDefaultAsync(x => x.Id == id);
+            if (libroBD == null)
+            {
+                return NotFound($"No existe el libro con ID:{id}");
+            }
+
+            var libroDto = mapper.Map<LibroPatchDto>(libroBD);
+            jsonPatchDocument.ApplyTo(libroDto, ModelState);
+
+            var esValido = TryValidateModel(libroDto);
+            if (!esValido)
+            {
+                return BadRequest(ModelState);
+            }
+
+            mapper.Map(libroDto, libroBD);
+
+            await this.dbContext.SaveChangesAsync();
+
+            return NoContent();
+        }
+
+        // DELETE api/<LibrosController>/5
+        [HttpDelete("{id:int}")]
+        public async Task<ActionResult> Delete(int id)
+        {
+            var existeLibro = await dbContext.Libros.AnyAsync(x => x.Id == id);
+
+            if(!existeLibro)
+            {
+                return NotFound($"No existe el libro con ID:{id}");
+            }
+
+            dbContext.Remove(new Libro { Id = id });
+            await dbContext.SaveChangesAsync();
+
+            return NoContent();
         }
 
         private static void AplicarOrdenLibros(Libro libro)
