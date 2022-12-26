@@ -18,14 +18,29 @@ namespace WebApiAutores.Controllers
     {
         private readonly ApplicationDbContext context;
         private readonly IMapper mapper;
+        private readonly IConfiguration configuration;
 
         public AutoresController(
             ApplicationDbContext context,
-            IMapper mapper
+            IMapper mapper, 
+            IConfiguration configuration
         )
         {
             this.context = context;
             this.mapper = mapper;
+            this.configuration = configuration;
+        }
+
+        [HttpGet("version")]
+        public ActionResult<string> ObtenerVersion()
+        {
+            return configuration["version"];
+        }
+
+        [HttpGet("cadenaConexion")]
+        public ActionResult<string> ObtenerCadenaConexion()
+        {
+            return configuration["connectionStrings:defaultConnection"];
         }
 
         [HttpGet] // GET: api/<AutoresController>
