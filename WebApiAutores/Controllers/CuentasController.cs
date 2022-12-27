@@ -16,11 +16,17 @@ namespace WebApiAutores.Controllers
     {
         private readonly UserManager<IdentityUser> userManager;
         private readonly IConfiguration configuration;
+        private readonly SignInManager<IdentityUser> signInManager;
 
-        public CuentasController(UserManager<IdentityUser> userManager, IConfiguration configuration)
+        public CuentasController(
+            UserManager<IdentityUser> userManager, 
+            IConfiguration configuration,
+            SignInManager<IdentityUser> signInManager
+            )
         {
             this.userManager = userManager;
             this.configuration = configuration;
+            this.signInManager = signInManager;
         }
 
         // GET: api/<CuentasController>
@@ -37,6 +43,24 @@ namespace WebApiAutores.Controllers
             return "value";
         }
 
+        //zutjmx@gmail.com / Proxmox5@
+        [HttpPost("login")]
+        public async Task<ActionResult<RespuestaAutenticacion>> Login(CredencialesUsuario credencialesUsuario)
+        {
+            var resultado = await signInManager.PasswordSignInAsync(credencialesUsuario.Email,
+                                                                    credencialesUsuario.Password,
+                                                                    isPersistent: false, 
+                                                                    lockoutOnFailure: false);
+            if(resultado.Succeeded)
+            {
+                return ConstruirToken(credencialesUsuario);
+            } else
+            {
+                return BadRequest($"Login incorrecto para el usuario: {credencialesUsuario.Email}");
+            }
+            
+        }
+
         // POST api/<CuentasController>/registrar
         [HttpPost("registrar")]
         public async Task<ActionResult<RespuestaAutenticacion>> Registrar([FromBody] CredencialesUsuario credencialesUsuario)
@@ -46,7 +70,7 @@ namespace WebApiAutores.Controllers
             
             if(resultado.Succeeded)
             {
-                return ContruirToken(credencialesUsuario);
+                return ConstruirToken(credencialesUsuario);
             } else 
             {
                 return BadRequest(resultado.Errors);
@@ -66,7 +90,7 @@ namespace WebApiAutores.Controllers
         {
         }
 
-        private RespuestaAutenticacion ContruirToken(CredencialesUsuario credencialesUsuario)
+        private RespuestaAutenticacion ConstruirToken(CredencialesUsuario credencialesUsuario)
         {
             var claims = new List<Claim>()
             {
