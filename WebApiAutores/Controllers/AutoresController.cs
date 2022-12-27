@@ -7,6 +7,7 @@ using WebApiAutores.DTOs;
 using WebApiAutores.Entidades;
 using WebApiAutores.Filtros;
 using System.Linq;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -31,31 +32,34 @@ namespace WebApiAutores.Controllers
             this.configuration = configuration;
         }
 
-        [HttpGet("version")]
-        public ActionResult<string> ObtenerVersion()
-        {
-            return configuration["version"];
-        }
+        // Para probar proveedores de configuración ini
+        //[HttpGet("version")]
+        //public ActionResult<string> ObtenerVersion()
+        //{
+        //    return configuration["version"];
+        //}
 
-        [HttpGet("cadenaConexion")]
-        public ActionResult<string> ObtenerCadenaConexion()
-        {
-            return configuration["connectionStrings:defaultConnection"];
-        }
+        //[HttpGet("cadenaConexion")]
+        //public ActionResult<string> ObtenerCadenaConexion()
+        //{
+        //    return configuration["connectionStrings:defaultConnection"];
+        //}
 
-        [HttpGet("versionBD")]
-        public ActionResult<string> ObtenerVersionBD()
-        {
-            return configuration["versionBD"];
-        }
+        //[HttpGet("versionBD")]
+        //public ActionResult<string> ObtenerVersionBD()
+        //{
+        //    return configuration["versionBD"];
+        //}
 
-        [HttpGet("seedToken")]
-        public ActionResult<string> ObtenerSeedToken()
-        {
-            return configuration["seedToken"];
-        }
+        //[HttpGet("seedToken")]
+        //public ActionResult<string> ObtenerSeedToken()
+        //{
+        //    return configuration["seedToken"];
+        //}
+        // Para probar proveedores de configuración fin
 
         [HttpGet] // GET: api/<AutoresController>
+        [Authorize(AuthenticationSchemes =JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<List<AutorDto>>> Get()
         {
             var autores = await context.Autores.ToListAsync();

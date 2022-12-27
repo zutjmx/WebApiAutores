@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using System.Text.Json.Serialization;
 using WebApiAutores.Middlewares;
 using WebApiAutores.Filtros;
+using Microsoft.AspNetCore.Identity;
 
 namespace WebApiAutores
 {
@@ -39,6 +40,11 @@ namespace WebApiAutores
             services.AddSwaggerGen();
 
             services.AddAutoMapper(typeof(Startup));
+
+            services.AddIdentity<IdentityUser,IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+
         }
 
         public void Configure(IApplicationBuilder application, IWebHostEnvironment hostEnvironment, ILogger<Startup> logger)
