@@ -53,6 +53,7 @@ namespace WebApiAutores
             // Configure the HTTP request pipeline.
             if (hostEnvironment.IsDevelopment())
             {
+                application.UseDeveloperExceptionPage();
                 application.UseSwagger();
                 application.UseSwaggerUI();
             }

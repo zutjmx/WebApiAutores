@@ -43,6 +43,18 @@ namespace WebApiAutores.Controllers
             return configuration["connectionStrings:defaultConnection"];
         }
 
+        [HttpGet("versionBD")]
+        public ActionResult<string> ObtenerVersionBD()
+        {
+            return configuration["versionBD"];
+        }
+
+        [HttpGet("seedToken")]
+        public ActionResult<string> ObtenerSeedToken()
+        {
+            return configuration["seedToken"];
+        }
+
         [HttpGet] // GET: api/<AutoresController>
         public async Task<ActionResult<List<AutorDto>>> Get()
         {
