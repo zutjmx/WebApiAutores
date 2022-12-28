@@ -29,19 +29,19 @@ namespace WebApiAutores.Controllers
             this.signInManager = signInManager;
         }
 
-        // GET: api/<CuentasController>
-        [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
+        //// GET: api/<CuentasController>
+        //[HttpGet]
+        //public IEnumerable<string> Get()
+        //{
+        //    return new string[] { "value1", "value2" };
+        //}
 
-        // GET api/<CuentasController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
+        //// GET api/<CuentasController>/5
+        //[HttpGet("{id}")]
+        //public string Get(int id)
+        //{
+        //    return "value";
+        //}
 
         //zutjmx@gmail.com / Proxmox5@
         [HttpPost("login")]
@@ -78,17 +78,17 @@ namespace WebApiAutores.Controllers
             
         }
 
-        // PUT api/<CuentasController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
+        //// PUT api/<CuentasController>/5
+        //[HttpPut("{id}")]
+        //public void Put(int id, [FromBody] string value)
+        //{
+        //}
 
-        // DELETE api/<CuentasController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
-        }
+        //// DELETE api/<CuentasController>/5
+        //[HttpDelete("{id}")]
+        //public void Delete(int id)
+        //{
+        //}
 
         private RespuestaAutenticacion ConstruirToken(CredencialesUsuario credencialesUsuario)
         {
