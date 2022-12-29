@@ -43,7 +43,6 @@ namespace WebApiAutores.Controllers
         //    return "value";
         //}
 
-        //zutjmx@gmail.com / Proxmox5@
         [HttpPost("login")]
         public async Task<ActionResult<RespuestaAutenticacion>> Login(CredencialesUsuario credencialesUsuario)
         {
