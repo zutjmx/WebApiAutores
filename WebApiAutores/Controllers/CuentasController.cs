@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -28,20 +30,6 @@ namespace WebApiAutores.Controllers
             this.configuration = configuration;
             this.signInManager = signInManager;
         }
-
-        //// GET: api/<CuentasController>
-        //[HttpGet]
-        //public IEnumerable<string> Get()
-        //{
-        //    return new string[] { "value1", "value2" };
-        //}
-
-        //// GET api/<CuentasController>/5
-        //[HttpGet("{id}")]
-        //public string Get(int id)
-        //{
-        //    return "value";
-        //}
 
         [HttpPost("login")]
         public async Task<ActionResult<RespuestaAutenticacion>> Login(CredencialesUsuario credencialesUsuario)
@@ -77,17 +65,20 @@ namespace WebApiAutores.Controllers
             
         }
 
-        //// PUT api/<CuentasController>/5
-        //[HttpPut("{id}")]
-        //public void Put(int id, [FromBody] string value)
-        //{
-        //}
+        [HttpGet("RenovarToken")]
+        [Authorize(AuthenticationSchemes =JwtBearerDefaults.AuthenticationScheme)]
+        public ActionResult<RespuestaAutenticacion> Renovar()
+        {
+            var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
+            var email = emailClaim.Value;
 
-        //// DELETE api/<CuentasController>/5
-        //[HttpDelete("{id}")]
-        //public void Delete(int id)
-        //{
-        //}
+            var credencialesUsuario = new CredencialesUsuario 
+            { 
+                Email = email 
+            };
+
+            return ConstruirToken(credencialesUsuario);
+        }
 
         private RespuestaAutenticacion ConstruirToken(CredencialesUsuario credencialesUsuario)
         {
