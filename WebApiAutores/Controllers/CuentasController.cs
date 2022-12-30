@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -7,6 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using WebApiAutores.DTOs;
+using WebApiAutores.Servicios;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -19,16 +21,66 @@ namespace WebApiAutores.Controllers
         private readonly UserManager<IdentityUser> userManager;
         private readonly IConfiguration configuration;
         private readonly SignInManager<IdentityUser> signInManager;
+        private readonly HashService hashService;
+        private readonly IDataProtector dataProtector;
 
         public CuentasController(
             UserManager<IdentityUser> userManager, 
             IConfiguration configuration,
-            SignInManager<IdentityUser> signInManager
+            SignInManager<IdentityUser> signInManager,
+            IDataProtectionProvider dataProtectionProvider,
+            HashService hashService
             )
         {
             this.userManager = userManager;
             this.configuration = configuration;
             this.signInManager = signInManager;
+            this.hashService = hashService;
+            this.dataProtector = dataProtectionProvider.CreateProtector(this.configuration["unDato"]);
+        }
+
+        [HttpGet("hash/{cadena}")]
+        public ActionResult ObtenerHash(string cadena) 
+        {
+            var primerHash = this.hashService.Hash(cadena);
+            var segudoHash = this.hashService.Hash(cadena);
+            return Ok(new
+            {
+                cadena,
+                primerHash,
+                segudoHash,
+            });
+        }
+
+        [HttpGet("encriptar/{cadena}")]
+        public ActionResult Encriptar(string cadena)
+        {
+            var cadenaCifrada = this.dataProtector.Protect(cadena);
+            var cadenaDescifrada = this.dataProtector.Unprotect(cadenaCifrada);
+            
+            return Ok(new
+            {
+                cadena,
+                cadenaCifrada,
+                cadenaDescifrada
+            });
+        }
+        
+        [HttpGet("encriptarPorTiempo/{cadena}")]
+        public ActionResult EncriptarPorTiempo(string cadena)
+        {
+            var protectorLimitadoPorTiempo = this.dataProtector.ToTimeLimitedDataProtector();
+
+            var cadenaCifrada = protectorLimitadoPorTiempo.Protect(cadena,lifetime: TimeSpan.FromSeconds(5));
+            //Thread.Sleep(TimeSpan.FromSeconds(6)); //Para probar el vencimiento del cifrado.
+            var cadenaDescifrada = protectorLimitadoPorTiempo.Unprotect(cadenaCifrada);
+            
+            return Ok(new
+            {
+                cadena,
+                cadenaCifrada,
+                cadenaDescifrada
+            });
         }
 
         [HttpPost("login")]
@@ -40,7 +92,7 @@ namespace WebApiAutores.Controllers
                                                                     lockoutOnFailure: false);
             if(resultado.Succeeded)
             {
-                return ConstruirToken(credencialesUsuario);
+                return await ConstruirToken(credencialesUsuario);
             } else
             {
                 return BadRequest($"Login incorrecto para el usuario: {credencialesUsuario.Email}");
@@ -57,7 +109,7 @@ namespace WebApiAutores.Controllers
             
             if(resultado.Succeeded)
             {
-                return ConstruirToken(credencialesUsuario);
+                return await ConstruirToken(credencialesUsuario);
             } else 
             {
                 return BadRequest(resultado.Errors);
@@ -67,7 +119,7 @@ namespace WebApiAutores.Controllers
 
         [HttpGet("RenovarToken")]
         [Authorize(AuthenticationSchemes =JwtBearerDefaults.AuthenticationScheme)]
-        public ActionResult<RespuestaAutenticacion> Renovar()
+        public async Task<ActionResult<RespuestaAutenticacion>> Renovar()
         {
             var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
             var email = emailClaim.Value;
@@ -77,15 +129,36 @@ namespace WebApiAutores.Controllers
                 Email = email 
             };
 
-            return ConstruirToken(credencialesUsuario);
+            return await ConstruirToken(credencialesUsuario);
         }
 
-        private RespuestaAutenticacion ConstruirToken(CredencialesUsuario credencialesUsuario)
+        [HttpPost("HacerAdmin")]
+        public async Task<ActionResult> HacerAdmin(EditarAdminDto editarAdminDto)
+        {
+            var usuario = await userManager.FindByEmailAsync(editarAdminDto.Email);
+            await userManager.AddClaimAsync(usuario, new Claim("esAdmin", "1"));
+            return NoContent();
+        }
+
+        [HttpPost("RemoverAdmin")]
+        public async Task<ActionResult> RemoverAdmin(EditarAdminDto editarAdminDto)
+        {
+            var usuario = await userManager.FindByEmailAsync(editarAdminDto.Email);
+            await userManager.RemoveClaimAsync(usuario, new Claim("esAdmin", "1"));
+            return NoContent();
+        }
+
+        private async Task<RespuestaAutenticacion> ConstruirToken(CredencialesUsuario credencialesUsuario)
         {
             var claims = new List<Claim>()
             {
                 new Claim("email",credencialesUsuario.Email)
             };
+
+            var usuario = await userManager.FindByEmailAsync(credencialesUsuario.Email);
+            var claimsDB = await userManager.GetClaimsAsync(usuario);
+
+            claims.AddRange(claimsDB);
 
             var llave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["llaveJwt"]));
             var credenciales = new SigningCredentials(llave,SecurityAlgorithms.HmacSha256);

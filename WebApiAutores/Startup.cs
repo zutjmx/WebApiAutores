@@ -9,6 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
 using System.IdentityModel.Tokens.Jwt;
+using WebApiAutores.Servicios;
 
 namespace WebApiAutores
 {
@@ -86,6 +87,24 @@ namespace WebApiAutores
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+            services.AddAuthorization(opciones =>
+            {
+                opciones.AddPolicy("EsAdmin", politica => politica.RequireClaim("esAdmin"));
+            });
+
+            services.AddDataProtection();
+            services.AddTransient<HashService>();
+
+            services.AddCors(opciones =>
+            {
+                opciones.AddDefaultPolicy(builder =>
+                {
+                    builder.WithOrigins("https://www.apirequest.io")
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+                });
+            });
+
         }
 
         public void Configure(IApplicationBuilder application, IWebHostEnvironment hostEnvironment, ILogger<Startup> logger)
@@ -107,6 +126,8 @@ namespace WebApiAutores
 
             application.UseHttpsRedirection();
             application.UseRouting();
+
+            application.UseCors();
             
             application.UseAuthorization();
 

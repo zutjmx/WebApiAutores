@@ -15,7 +15,7 @@ namespace WebApiAutores.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme,Policy ="EsAdmin")]
     public class AutoresController : ControllerBase
     {
         private readonly ApplicationDbContext context;
