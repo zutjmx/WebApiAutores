@@ -24,7 +24,7 @@ namespace WebApiAutores.Controllers
         }
 
         // GET: api/<LibrosController>
-        [HttpGet]
+        [HttpGet(Name = "obtenerLibros")]
         public async Task<ActionResult<List<LibroDto>>> Get()
         {
             var libros = await this.dbContext.Libros.ToListAsync();
@@ -52,7 +52,7 @@ namespace WebApiAutores.Controllers
         }
 
         // POST api/<LibrosController>
-        [HttpPost]
+        [HttpPost(Name = "crearLibro")]
         public async Task<ActionResult> Post([FromBody] LibroCreacionDto libroCreacionDto)
         {
 
@@ -84,7 +84,7 @@ namespace WebApiAutores.Controllers
         }
 
         // PUT api/<LibrosController>/5
-        [HttpPut("{id:int}")]
+        [HttpPut("{id:int}", Name = "actualizarLibro")]
         public async Task<ActionResult> Put(int id, [FromBody] LibroCreacionDto libroCreacionDto)
         {
             var libroDB = await dbContext.Libros
@@ -105,7 +105,7 @@ namespace WebApiAutores.Controllers
             return NoContent();
         }
 
-        [HttpPatch("{id:int}")]
+        [HttpPatch("{id:int}", Name = "patchLibro")]
         public async Task<ActionResult> Patch(int id, JsonPatchDocument<LibroPatchDto> jsonPatchDocument)
         {
             if (jsonPatchDocument == null)
@@ -136,7 +136,7 @@ namespace WebApiAutores.Controllers
         }
 
         // DELETE api/<LibrosController>/5
-        [HttpDelete("{id:int}")]
+        [HttpDelete("{id:int}", Name = "borrarLibro")]
         public async Task<ActionResult> Delete(int id)
         {
             var existeLibro = await dbContext.Libros.AnyAsync(x => x.Id == id);

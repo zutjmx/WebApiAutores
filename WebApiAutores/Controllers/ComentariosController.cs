@@ -30,7 +30,7 @@ namespace WebApiAutores.Controllers
         }
 
         // GET: api/<ComentariosController>
-        [HttpGet]
+        [HttpGet(Name = "obtenerComentarios")]
         public async Task<ActionResult<List<ComentarioDto>>> Get(int libroId)
         {
             var existeLibro = await context.Libros.AnyAsync(libroDB => libroDB.Id == libroId);
@@ -61,7 +61,7 @@ namespace WebApiAutores.Controllers
         }
 
         // POST api/<ComentariosController>
-        [HttpPost]
+        [HttpPost(Name = "crearComentario")]
         [Authorize(AuthenticationSchemes =JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> Post(int libroId, [FromBody] ComentarioCreacionDto comentarioCreacionDto)
         {
@@ -87,7 +87,7 @@ namespace WebApiAutores.Controllers
         }
 
         // PUT api/<ComentariosController>/5
-        [HttpPut("{id:int}")]
+        [HttpPut("{id:int}", Name = "actualizarComentario")]
         public async Task<ActionResult> Put(int libroId, int id, [FromBody] ComentarioCreacionDto comentarioCreacionDto)
         {
             var existeLibro = await context.Libros.AnyAsync(libroDB => libroDB.Id == libroId);
@@ -113,7 +113,7 @@ namespace WebApiAutores.Controllers
         }
 
         // DELETE api/<ComentariosController>/5
-        [HttpDelete("{id}")]
+        [HttpDelete("{id}", Name = "borrarComentario")]
         public void Delete(int id)
         {
         }
