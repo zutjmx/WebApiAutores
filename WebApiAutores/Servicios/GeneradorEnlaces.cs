@@ -1,0 +1,69 @@
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Routing;
+using System;
+using WebApiAutores.DTOs;
+
+namespace WebApiAutores.Servicios
+{
+    public class GeneradorEnlaces
+    {
+        private readonly IAuthorizationService authorizationService;
+        private readonly IHttpContextAccessor httpContextAccessor;
+        private readonly IActionContextAccessor actionContextAccessor;
+
+        public GeneradorEnlaces(
+            IAuthorizationService authorizationService, 
+            IHttpContextAccessor httpContextAccessor, 
+            IActionContextAccessor actionContextAccessor)
+        {
+            this.authorizationService = authorizationService;
+            this.httpContextAccessor = httpContextAccessor;
+            this.actionContextAccessor = actionContextAccessor;
+        }
+
+        private IUrlHelper ConstruirUrlHelper()
+        {
+            var factoria = httpContextAccessor
+                .HttpContext
+                .RequestServices
+                .GetRequiredService<IUrlHelperFactory>();
+
+            return factoria.GetUrlHelper(actionContextAccessor.ActionContext);
+        }
+
+        private async Task<bool> EsAdmin()
+        {
+            var httpContext = httpContextAccessor.HttpContext;
+            var resultado = await authorizationService.AuthorizeAsync(httpContext.User, "esAdmin");
+            return resultado.Succeeded;
+        }
+
+        public async Task GenerarEnlaces(AutorDto autorDto)
+        {
+
+            bool esAdmin = await EsAdmin();
+            var Url = ConstruirUrlHelper();
+
+            autorDto.Enlaces.Add(new DatoHATEOAS(
+                enlace: Url.Link("obtenerAutor", new { id = autorDto.Id }),
+                descripcion: "self",
+                metodo: "GET"));
+
+            if (esAdmin)
+            {
+                autorDto.Enlaces.Add(new DatoHATEOAS(
+                    enlace: Url.Link("actualizarAutor", new { id = autorDto.Id }),
+                    descripcion: "autor-actualizar",
+                    metodo: "PUT"));
+                autorDto.Enlaces.Add(new DatoHATEOAS(
+                    enlace: Url.Link("borrarAutor", new { id = autorDto.Id }),
+                    descripcion: "autor-borrar",
+                    metodo: "DELETE"));
+            }
+
+        }
+
+    }
+}

@@ -8,6 +8,7 @@ using WebApiAutores.Entidades;
 using WebApiAutores.Filtros;
 using System.Linq;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using WebApiAutores.Utilidades;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -73,7 +74,7 @@ namespace WebApiAutores.Controllers
             {
                 var esAdmin = await authorizationService.AuthorizeAsync(User, "esAdmin");
 
-                dtos.ForEach(dto => GenerarEnlaces(dto, esAdmin.Succeeded));
+                //dtos.ForEach(dto => GenerarEnlaces(dto, esAdmin.Succeeded));
 
                 var resultado = new ColeccionDeRecursos<AutorDto> { Valores = dtos };
 
@@ -99,7 +100,8 @@ namespace WebApiAutores.Controllers
         // GET api/<AutoresController>/5
         [HttpGet("{id:int}",Name ="obtenerAutor")]
         [AllowAnonymous]
-        public async Task<ActionResult<AutorDtoConLibros>> Get([FromRoute] int id)
+        [ServiceFilter(typeof(HATEOASAutorFiltroAttribute))]
+        public async Task<ActionResult<AutorDtoConLibros>> Get([FromRoute] int id, [FromHeader] string incluirHATEOAS)
         {
             var autor = await context.Autores
                 .Include(autorDB => autorDB.AutoresLibros)
@@ -112,8 +114,8 @@ namespace WebApiAutores.Controllers
             }
 
             var dto = mapper.Map<AutorDtoConLibros>(autor);
-            var esAdmin = await authorizationService.AuthorizeAsync(User, "esAdmin");
-            GenerarEnlaces(dto,esAdmin.Succeeded);
+            //var esAdmin = await authorizationService.AuthorizeAsync(User, "esAdmin");
+            //GenerarEnlaces(dto,esAdmin.Succeeded);
             return dto;
         }
 
@@ -177,27 +179,27 @@ namespace WebApiAutores.Controllers
             return Ok();
         }
 
-        private void GenerarEnlaces(AutorDto autorDto, bool esAdmin)
-        {
-            autorDto.Enlaces.Add(new DatoHATEOAS(
-                enlace: Url.Link("obtenerAutor", new { id = autorDto.Id }),
-                descripcion: "self",
-                metodo: "GET"));
+        //private void GenerarEnlaces(AutorDto autorDto, bool esAdmin)
+        //{
+        //    autorDto.Enlaces.Add(new DatoHATEOAS(
+        //        enlace: Url.Link("obtenerAutor", new { id = autorDto.Id }),
+        //        descripcion: "self",
+        //        metodo: "GET"));
 
-            if(esAdmin)
-            {
-                autorDto.Enlaces.Add(new DatoHATEOAS(
-                    enlace: Url.Link("actualizarAutor", new { id = autorDto.Id }),
-                    descripcion: "autor-actualizar",
-                    metodo: "PUT"));
+        //    if(esAdmin)
+        //    {
+        //        autorDto.Enlaces.Add(new DatoHATEOAS(
+        //            enlace: Url.Link("actualizarAutor", new { id = autorDto.Id }),
+        //            descripcion: "autor-actualizar",
+        //            metodo: "PUT"));
 
-                autorDto.Enlaces.Add(new DatoHATEOAS(
-                    enlace: Url.Link("borrarAutor", new { id = autorDto.Id }),
-                    descripcion: "autor-borrar",
-                    metodo: "DELETE"));
-            }
+        //        autorDto.Enlaces.Add(new DatoHATEOAS(
+        //            enlace: Url.Link("borrarAutor", new { id = autorDto.Id }),
+        //            descripcion: "autor-borrar",
+        //            metodo: "DELETE"));
+        //    }
 
-        }
+        //}
 
     }
 }
