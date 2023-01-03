@@ -64,31 +64,36 @@ namespace WebApiAutores.Controllers
 
         [HttpGet(Name ="obtenerAutores")] // GET: api/<AutoresController>
         [AllowAnonymous]
-        public async Task<ColeccionDeRecursos<AutorDto>> Get()
+        public async Task<IActionResult> Get([FromQuery] bool incluirHATEOAS = true)
         {
             var autores = await context.Autores.ToListAsync();
             var dtos = mapper.Map<List<AutorDto>>(autores);
-
-            var esAdmin = await authorizationService.AuthorizeAsync(User, "esAdmin");
-
-            dtos.ForEach(dto => GenerarEnlaces(dto, esAdmin.Succeeded));
-
-            var resultado = new ColeccionDeRecursos<AutorDto> { Valores = dtos };
-
-            resultado.Enlaces.Add(new DatoHATEOAS(
-                enlace: Url.Link("obtenerAutores", new { }),
-                descripcion: "self",
-                metodo: "GET"));
-
-            if(esAdmin.Succeeded)
+            
+            if(incluirHATEOAS)
             {
+                var esAdmin = await authorizationService.AuthorizeAsync(User, "esAdmin");
+
+                dtos.ForEach(dto => GenerarEnlaces(dto, esAdmin.Succeeded));
+
+                var resultado = new ColeccionDeRecursos<AutorDto> { Valores = dtos };
+
                 resultado.Enlaces.Add(new DatoHATEOAS(
-                    enlace: Url.Link("crearAutor", new { }),
-                    descripcion: "crear-autor",
-                    metodo: "POST"));
+                    enlace: Url.Link("obtenerAutores", new { }),
+                    descripcion: "self",
+                    metodo: "GET"));
+
+                if (esAdmin.Succeeded)
+                {
+                    resultado.Enlaces.Add(new DatoHATEOAS(
+                        enlace: Url.Link("crearAutor", new { }),
+                        descripcion: "crear-autor",
+                        metodo: "POST"));
+                }
+
+                return Ok(resultado);
             }
 
-            return resultado;
+            return Ok(dtos);
         }
 
         // GET api/<AutoresController>/5
