@@ -8,9 +8,9 @@ using WebApiAutores.Entidades;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace WebApiAutores.Controllers
+namespace WebApiAutores.Controllers.V1
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class LibrosController : ControllerBase
     {
@@ -27,21 +27,21 @@ namespace WebApiAutores.Controllers
         [HttpGet(Name = "obtenerLibros")]
         public async Task<ActionResult<List<LibroDto>>> Get()
         {
-            var libros = await this.dbContext.Libros.ToListAsync();
+            var libros = await dbContext.Libros.ToListAsync();
             return mapper.Map<List<LibroDto>>(libros);
         }
 
         // GET api/<LibrosController>/5
-        [HttpGet("{id:int}",Name ="obtenerLibro")]
+        [HttpGet("{id:int}", Name = "obtenerLibro")]
         public async Task<ActionResult<LibroDtoConAutores>> Get(int id)
         {
-            var libro = await this.dbContext.Libros
+            var libro = await dbContext.Libros
                 .Include(libroDB => libroDB.AutoresLibros)
                 .ThenInclude(autorLibroDB => autorLibroDB.Autor)
                 .Include(libroBD => libroBD.Comentarios)
                 .FirstOrDefaultAsync(libro => libro.Id == id);
 
-            if(libro== null)
+            if (libro == null)
             {
                 return NotFound($"No existe el ibro con ID:{id}");
             }
@@ -75,8 +75,8 @@ namespace WebApiAutores.Controllers
 
             AplicarOrdenLibros(libro);
 
-            this.dbContext.Add(libro);
-            await this.dbContext.SaveChangesAsync();
+            dbContext.Add(libro);
+            await dbContext.SaveChangesAsync();
 
             var libroDto = mapper.Map<LibroDto>(libro);
 
@@ -90,7 +90,7 @@ namespace WebApiAutores.Controllers
             var libroDB = await dbContext.Libros
                 .Include(x => x.AutoresLibros)
                 .FirstOrDefaultAsync(x => x.Id == id);
-            
+
             if (libroDB == null)
             {
                 return NotFound($"No existe el libro con ID:{id}");
@@ -100,7 +100,7 @@ namespace WebApiAutores.Controllers
 
             AplicarOrdenLibros(libroDB);
 
-            await this.dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
 
             return NoContent();
         }
@@ -130,7 +130,7 @@ namespace WebApiAutores.Controllers
 
             mapper.Map(libroDto, libroBD);
 
-            await this.dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
 
             return NoContent();
         }
@@ -141,7 +141,7 @@ namespace WebApiAutores.Controllers
         {
             var existeLibro = await dbContext.Libros.AnyAsync(x => x.Id == id);
 
-            if(!existeLibro)
+            if (!existeLibro)
             {
                 return NotFound($"No existe el libro con ID:{id}");
             }

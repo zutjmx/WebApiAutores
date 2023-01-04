@@ -4,9 +4,9 @@ using WebApiAutores.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace WebApiAutores.Controllers
+namespace WebApiAutores.Controllers.V1
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class AutoresSeedController : ControllerBase
     {
@@ -21,19 +21,20 @@ namespace WebApiAutores.Controllers
         [HttpPost]
         public RespuestaSeedAutor Post([FromBody] int Cuantos)
         {
-            Util util = new Util(this.context);
+            Util util = new Util(context);
             RespuestaSeedAutor respuesta = new RespuestaSeedAutor();
             bool respuestaSeed = util.SetSeed(Cuantos);
-            if(respuestaSeed)
+            if (respuestaSeed)
             {
                 respuesta.Codigo = 1;
                 respuesta.Mensaje = "Ok";
-            } else
+            }
+            else
             {
                 respuesta.Codigo = 0;
                 respuesta.Mensaje = "Ocurrió un error al ejecutar el método Util.SetSeed";
             }
-            
+
             return respuesta;
         }
 

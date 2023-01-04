@@ -9,9 +9,9 @@ using WebApiAutores.Entidades;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace WebApiAutores.Controllers
+namespace WebApiAutores.Controllers.V1
 {
-    [Route("api/libros/{libroId:int}/[controller]")]
+    [Route("api/v1/libros/{libroId:int}/[controller]")]
     [ApiController]
     public class ComentariosController : ControllerBase
     {
@@ -20,9 +20,9 @@ namespace WebApiAutores.Controllers
         private readonly UserManager<IdentityUser> userManager;
 
         public ComentariosController(
-            ApplicationDbContext context, 
+            ApplicationDbContext context,
             IMapper mapper,
-            UserManager<IdentityUser> userManager) 
+            UserManager<IdentityUser> userManager)
         {
             this.context = context;
             this.mapper = mapper;
@@ -47,11 +47,11 @@ namespace WebApiAutores.Controllers
         }
 
         // GET api/<ComentariosController>/5
-        [HttpGet("{id}",Name = "obtenerComentario")]
+        [HttpGet("{id}", Name = "obtenerComentario")]
         public async Task<ActionResult<ComentarioDto>> GetPorId(int id)
         {
             var comentario = await context.Comentarios.FirstOrDefaultAsync(comentarioDB => comentarioDB.Id == id);
-            
+
             if (comentario == null)
             {
                 return NotFound($"No existe el comentario con ID:{id}");
@@ -62,10 +62,10 @@ namespace WebApiAutores.Controllers
 
         // POST api/<ComentariosController>
         [HttpPost(Name = "crearComentario")]
-        [Authorize(AuthenticationSchemes =JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult> Post(int libroId, [FromBody] ComentarioCreacionDto comentarioCreacionDto)
         {
-            var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type== "email").FirstOrDefault();
+            var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
             var email = emailClaim.Value;
             var usuario = await userManager.FindByEmailAsync(email);
             var usuarioId = usuario.Id;
@@ -82,8 +82,8 @@ namespace WebApiAutores.Controllers
             await context.SaveChangesAsync();
 
             var comentarioDto = mapper.Map<ComentarioDto>(comentario);
-            
-            return CreatedAtRoute("obtenerComentario",new {id = comentario.Id, libroId }, comentarioDto);            
+
+            return CreatedAtRoute("obtenerComentario", new { id = comentario.Id, libroId }, comentarioDto);
         }
 
         // PUT api/<ComentariosController>/5
@@ -97,13 +97,13 @@ namespace WebApiAutores.Controllers
             }
 
             var existeComentario = await context.Comentarios.AnyAsync(comentarioDB => comentarioDB.Id == id);
-            if(!existeComentario)
+            if (!existeComentario)
             {
                 return NotFound($"No existe el comentario con ID: {id}");
             }
 
             var comentario = mapper.Map<Comentario>(comentarioCreacionDto);
-            comentario.Id= id;
+            comentario.Id = id;
             comentario.LibroId = libroId;
 
             context.Update(comentario);

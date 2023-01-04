@@ -12,7 +12,10 @@ using System.IdentityModel.Tokens.Jwt;
 using WebApiAutores.Servicios;
 using WebApiAutores.Utilidades;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
 
+[assembly: ApiConventionType(typeof(DefaultApiConventions))]
 namespace WebApiAutores
 {
     public class Startup
@@ -31,6 +34,7 @@ namespace WebApiAutores
             services.AddControllers(opciones =>
             {
                 opciones.Filters.Add(typeof(FiltroDeExcepcion));
+                opciones.Conventions.Add(new SwaggerAgrupaPorVersion());
             }).AddJsonOptions(
                 x => x.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles
                 ).AddNewtonsoftJson();
@@ -58,7 +62,28 @@ namespace WebApiAutores
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(c =>
             {
+                c.SwaggerDoc(
+                    "v1", 
+                    new OpenApiInfo { 
+                        Title = "WebApiAutores", 
+                        Version = "v1",
+                        Description = "Web Api de Autores y Libros",
+                        Contact = new OpenApiContact
+                        {
+                            Email = "zutjmx@gmail.com",
+                            Name = "Jesús Zúñiga Trejo",
+                            Url = new Uri("https://github.com/zutjmx")
+                        }, 
+                        License = new OpenApiLicense
+                        {
+                            Name= "MIT",
+                        }
+                    }
+                );
+                c.SwaggerDoc("v2", new OpenApiInfo { Title = "WebApiAutores", Version = "v2"});
+
                 c.OperationFilter<AgregarParametroHATEOAS>();
+                c.OperationFilter<AgregarParametroXVersion>();
 
                 c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
@@ -83,6 +108,11 @@ namespace WebApiAutores
                         new string[]{}
                     }
                 });
+
+                var archivoXml = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var rutaXml = Path.Combine(AppContext.BaseDirectory,archivoXml);
+                c.IncludeXmlComments(rutaXml);
+
             });
 
             services.AddAutoMapper(typeof(Startup));
@@ -127,10 +157,14 @@ namespace WebApiAutores
             // Configure the HTTP request pipeline.
             if (hostEnvironment.IsDevelopment())
             {
-                application.UseDeveloperExceptionPage();
-                application.UseSwagger();
-                application.UseSwaggerUI();
+                application.UseDeveloperExceptionPage();                
             }
+
+            application.UseSwagger();
+            application.UseSwaggerUI(c => {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "WebApiAutores v1");
+                c.SwaggerEndpoint("/swagger/v2/swagger.json", "WebApiAutores v2");
+            });
 
             application.UseHttpsRedirection();
             application.UseRouting();

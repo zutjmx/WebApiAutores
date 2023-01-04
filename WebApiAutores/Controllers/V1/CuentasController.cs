@@ -12,9 +12,9 @@ using WebApiAutores.Servicios;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace WebApiAutores.Controllers
+namespace WebApiAutores.Controllers.V1
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class CuentasController : ControllerBase
     {
@@ -25,7 +25,7 @@ namespace WebApiAutores.Controllers
         private readonly IDataProtector dataProtector;
 
         public CuentasController(
-            UserManager<IdentityUser> userManager, 
+            UserManager<IdentityUser> userManager,
             IConfiguration configuration,
             SignInManager<IdentityUser> signInManager,
             IDataProtectionProvider dataProtectionProvider,
@@ -36,7 +36,7 @@ namespace WebApiAutores.Controllers
             this.configuration = configuration;
             this.signInManager = signInManager;
             this.hashService = hashService;
-            this.dataProtector = dataProtectionProvider.CreateProtector(this.configuration["unDato"]);
+            dataProtector = dataProtectionProvider.CreateProtector(this.configuration["unDato"]);
         }
 
         //[HttpGet("hash/{cadena}")]
@@ -57,7 +57,7 @@ namespace WebApiAutores.Controllers
         //{
         //    var cadenaCifrada = this.dataProtector.Protect(cadena);
         //    var cadenaDescifrada = this.dataProtector.Unprotect(cadenaCifrada);
-            
+
         //    return Ok(new
         //    {
         //        cadena,
@@ -65,7 +65,7 @@ namespace WebApiAutores.Controllers
         //        cadenaDescifrada
         //    });
         //}
-        
+
         //[HttpGet("encriptarPorTiempo/{cadena}")]
         //public ActionResult EncriptarPorTiempo(string cadena)
         //{
@@ -74,7 +74,7 @@ namespace WebApiAutores.Controllers
         //    var cadenaCifrada = protectorLimitadoPorTiempo.Protect(cadena,lifetime: TimeSpan.FromSeconds(5));
         //    //Thread.Sleep(TimeSpan.FromSeconds(6)); //Para probar el vencimiento del cifrado.
         //    var cadenaDescifrada = protectorLimitadoPorTiempo.Unprotect(cadenaCifrada);
-            
+
         //    return Ok(new
         //    {
         //        cadena,
@@ -88,16 +88,17 @@ namespace WebApiAutores.Controllers
         {
             var resultado = await signInManager.PasswordSignInAsync(credencialesUsuario.Email,
                                                                     credencialesUsuario.Password,
-                                                                    isPersistent: false, 
+                                                                    isPersistent: false,
                                                                     lockoutOnFailure: false);
-            if(resultado.Succeeded)
+            if (resultado.Succeeded)
             {
                 return await ConstruirToken(credencialesUsuario);
-            } else
+            }
+            else
             {
                 return BadRequest($"Login incorrecto para el usuario: {credencialesUsuario.Email}");
             }
-            
+
         }
 
         // POST api/<CuentasController>/registrar
@@ -105,28 +106,29 @@ namespace WebApiAutores.Controllers
         public async Task<ActionResult<RespuestaAutenticacion>> Registrar([FromBody] CredencialesUsuario credencialesUsuario)
         {
             var usuario = new IdentityUser { UserName = credencialesUsuario.Email, Email = credencialesUsuario.Email };
-            var resultado = await userManager.CreateAsync(usuario,credencialesUsuario.Password);
-            
-            if(resultado.Succeeded)
+            var resultado = await userManager.CreateAsync(usuario, credencialesUsuario.Password);
+
+            if (resultado.Succeeded)
             {
                 return await ConstruirToken(credencialesUsuario);
-            } else 
+            }
+            else
             {
                 return BadRequest(resultado.Errors);
             }
-            
+
         }
 
         [HttpGet("RenovarToken", Name = "renovarToken")]
-        [Authorize(AuthenticationSchemes =JwtBearerDefaults.AuthenticationScheme)]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<ActionResult<RespuestaAutenticacion>> Renovar()
         {
             var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
             var email = emailClaim.Value;
 
-            var credencialesUsuario = new CredencialesUsuario 
-            { 
-                Email = email 
+            var credencialesUsuario = new CredencialesUsuario
+            {
+                Email = email
             };
 
             return await ConstruirToken(credencialesUsuario);
@@ -161,7 +163,7 @@ namespace WebApiAutores.Controllers
             claims.AddRange(claimsDB);
 
             var llave = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["llaveJwt"]));
-            var credenciales = new SigningCredentials(llave,SecurityAlgorithms.HmacSha256);
+            var credenciales = new SigningCredentials(llave, SecurityAlgorithms.HmacSha256);
 
             var expiracion = DateTime.UtcNow.AddHours(1);
 
@@ -173,7 +175,8 @@ namespace WebApiAutores.Controllers
                     signingCredentials: credenciales
                 );
 
-            return new RespuestaAutenticacion() {
+            return new RespuestaAutenticacion()
+            {
                 Token = new JwtSecurityTokenHandler().WriteToken(securityToken),
                 Expiracion = expiracion,
             };
