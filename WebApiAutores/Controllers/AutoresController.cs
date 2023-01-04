@@ -65,36 +65,11 @@ namespace WebApiAutores.Controllers
 
         [HttpGet(Name ="obtenerAutores")] // GET: api/<AutoresController>
         [AllowAnonymous]
-        public async Task<IActionResult> Get([FromQuery] bool incluirHATEOAS = true)
+        [ServiceFilter(typeof(HATEOASAutorFiltroAttribute))]
+        public async Task<ActionResult<List<AutorDto>>> Get([FromHeader] string incluirHATEOAS)
         {
             var autores = await context.Autores.ToListAsync();
-            var dtos = mapper.Map<List<AutorDto>>(autores);
-            
-            if(incluirHATEOAS)
-            {
-                var esAdmin = await authorizationService.AuthorizeAsync(User, "esAdmin");
-
-                //dtos.ForEach(dto => GenerarEnlaces(dto, esAdmin.Succeeded));
-
-                var resultado = new ColeccionDeRecursos<AutorDto> { Valores = dtos };
-
-                resultado.Enlaces.Add(new DatoHATEOAS(
-                    enlace: Url.Link("obtenerAutores", new { }),
-                    descripcion: "self",
-                    metodo: "GET"));
-
-                if (esAdmin.Succeeded)
-                {
-                    resultado.Enlaces.Add(new DatoHATEOAS(
-                        enlace: Url.Link("crearAutor", new { }),
-                        descripcion: "crear-autor",
-                        metodo: "POST"));
-                }
-
-                return Ok(resultado);
-            }
-
-            return Ok(dtos);
+            return mapper.Map<List<AutorDto>>(autores);            
         }
 
         // GET api/<AutoresController>/5
@@ -121,7 +96,7 @@ namespace WebApiAutores.Controllers
 
         // GET api/<AutoresController>/nombre
         [HttpGet("{nombre}",Name = "obtenerAutorPorNombre")]
-        public async Task<ActionResult<List<AutorDto>>> Get([FromRoute] string nombre)
+        public async Task<ActionResult<List<AutorDto>>> GetPorNombre([FromRoute] string nombre)
         {
             var autores = await context.Autores.Where(autorBD => autorBD.Nombre.ToLower().Contains(nombre.ToLower())).ToListAsync();
             return mapper.Map<List<AutorDto>>(autores);
