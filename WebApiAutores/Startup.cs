@@ -135,7 +135,8 @@ namespace WebApiAutores
                 {
                     builder.WithOrigins("https://www.apirequest.io")
                     .AllowAnyMethod()
-                    .AllowAnyHeader();
+                    .AllowAnyHeader()
+                    .WithExposedHeaders(new string[] { "cantidadTotalRegistros" });
                 });
             });
 

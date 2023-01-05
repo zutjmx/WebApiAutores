@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApiAutores.DTOs;
 using WebApiAutores.Entidades;
+using WebApiAutores.Utilidades;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -31,7 +32,7 @@ namespace WebApiAutores.Controllers.V1
 
         // GET: api/<ComentariosController>
         [HttpGet(Name = "obtenerComentarios")]
-        public async Task<ActionResult<List<ComentarioDto>>> Get(int libroId)
+        public async Task<ActionResult<List<ComentarioDto>>> Get(int libroId, [FromQuery] PaginacionDto paginacionDto)
         {
             var existeLibro = await context.Libros.AnyAsync(libroDB => libroDB.Id == libroId);
             if (!existeLibro)
@@ -39,8 +40,19 @@ namespace WebApiAutores.Controllers.V1
                 return NotFound($"No existe el libro con ID: {libroId}");
             }
 
-            var comentarios = await context.Comentarios
+            var queryable = context.Comentarios
                 .Where(comentarioBD => comentarioBD.LibroId == libroId)
+                .AsQueryable();
+
+            await HttpContext.InsertarParametrosPaginacionEnCabecera(queryable);
+
+            //var comentarios = await context.Comentarios
+            //    .Where(comentarioBD => comentarioBD.LibroId == libroId)
+            //    .ToListAsync();
+
+            var comentarios = await queryable
+                .OrderBy(comentario => comentario.Id)
+                .Paginar(paginacionDto)
                 .ToListAsync();
 
             return mapper.Map<List<ComentarioDto>>(comentarios);
