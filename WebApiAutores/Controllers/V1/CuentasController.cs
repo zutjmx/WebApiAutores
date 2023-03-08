@@ -21,68 +21,21 @@ namespace WebApiAutores.Controllers.V1
         private readonly UserManager<IdentityUser> userManager;
         private readonly IConfiguration configuration;
         private readonly SignInManager<IdentityUser> signInManager;
-        private readonly HashService hashService;
-        private readonly IDataProtector dataProtector;
+        private readonly ServicioLlaves servicioLlaves;
 
         public CuentasController(
             UserManager<IdentityUser> userManager,
             IConfiguration configuration,
             SignInManager<IdentityUser> signInManager,
-            IDataProtectionProvider dataProtectionProvider,
-            HashService hashService
+            ServicioLlaves servicioLlaves
             )
         {
             this.userManager = userManager;
             this.configuration = configuration;
             this.signInManager = signInManager;
-            this.hashService = hashService;
-            dataProtector = dataProtectionProvider.CreateProtector(this.configuration["unDato"]);
+            this.servicioLlaves = servicioLlaves;
         }
-
-        //[HttpGet("hash/{cadena}")]
-        //public ActionResult ObtenerHash(string cadena) 
-        //{
-        //    var primerHash = this.hashService.Hash(cadena);
-        //    var segudoHash = this.hashService.Hash(cadena);
-        //    return Ok(new
-        //    {
-        //        cadena,
-        //        primerHash,
-        //        segudoHash,
-        //    });
-        //}
-
-        //[HttpGet("encriptar/{cadena}")]
-        //public ActionResult Encriptar(string cadena)
-        //{
-        //    var cadenaCifrada = this.dataProtector.Protect(cadena);
-        //    var cadenaDescifrada = this.dataProtector.Unprotect(cadenaCifrada);
-
-        //    return Ok(new
-        //    {
-        //        cadena,
-        //        cadenaCifrada,
-        //        cadenaDescifrada
-        //    });
-        //}
-
-        //[HttpGet("encriptarPorTiempo/{cadena}")]
-        //public ActionResult EncriptarPorTiempo(string cadena)
-        //{
-        //    var protectorLimitadoPorTiempo = this.dataProtector.ToTimeLimitedDataProtector();
-
-        //    var cadenaCifrada = protectorLimitadoPorTiempo.Protect(cadena,lifetime: TimeSpan.FromSeconds(5));
-        //    //Thread.Sleep(TimeSpan.FromSeconds(6)); //Para probar el vencimiento del cifrado.
-        //    var cadenaDescifrada = protectorLimitadoPorTiempo.Unprotect(cadenaCifrada);
-
-        //    return Ok(new
-        //    {
-        //        cadena,
-        //        cadenaCifrada,
-        //        cadenaDescifrada
-        //    });
-        //}
-
+        
         [HttpPost("login", Name = "loginUsuario")]
         public async Task<ActionResult<RespuestaAutenticacion>> Login(CredencialesUsuario credencialesUsuario)
         {
@@ -92,7 +45,8 @@ namespace WebApiAutores.Controllers.V1
                                                                     lockoutOnFailure: false);
             if (resultado.Succeeded)
             {
-                return await ConstruirToken(credencialesUsuario);
+                var usuario = await userManager.FindByEmailAsync(credencialesUsuario.Email);
+                return await ConstruirToken(credencialesUsuario,usuario.Id);
             }
             else
             {
@@ -110,7 +64,8 @@ namespace WebApiAutores.Controllers.V1
 
             if (resultado.Succeeded)
             {
-                return await ConstruirToken(credencialesUsuario);
+                await servicioLlaves.CrearLlave(usuario.Id, Entidades.TipoLlave.Gratuita);
+                return await ConstruirToken(credencialesUsuario, usuario.Id);
             }
             else
             {
@@ -126,12 +81,15 @@ namespace WebApiAutores.Controllers.V1
             var emailClaim = HttpContext.User.Claims.Where(claim => claim.Type == "email").FirstOrDefault();
             var email = emailClaim.Value;
 
+            var idClaim = HttpContext.User.Claims.Where(claim => claim.Type == "id").FirstOrDefault();
+            var usuarioId = idClaim.Value;
+
             var credencialesUsuario = new CredencialesUsuario
             {
                 Email = email
             };
 
-            return await ConstruirToken(credencialesUsuario);
+            return await ConstruirToken(credencialesUsuario, usuarioId);
         }
 
         [HttpPost("HacerAdmin", Name = "hacerAdmin")]
@@ -150,11 +108,13 @@ namespace WebApiAutores.Controllers.V1
             return NoContent();
         }
 
-        private async Task<RespuestaAutenticacion> ConstruirToken(CredencialesUsuario credencialesUsuario)
+        private async Task<RespuestaAutenticacion> ConstruirToken(CredencialesUsuario credencialesUsuario,
+            string usuarioId)
         {
             var claims = new List<Claim>()
             {
-                new Claim("email",credencialesUsuario.Email)
+                new Claim("email",credencialesUsuario.Email),
+                new Claim("id",usuarioId)
             };
 
             var usuario = await userManager.FindByEmailAsync(credencialesUsuario.Email);

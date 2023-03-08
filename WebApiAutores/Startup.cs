@@ -133,7 +133,7 @@ namespace WebApiAutores
             {
                 opciones.AddDefaultPolicy(builder =>
                 {
-                    builder.WithOrigins("https://www.apirequest.io")
+                    builder.AllowAnyOrigin()
                     .AllowAnyMethod()
                     .AllowAnyHeader()
                     .WithExposedHeaders(new string[] { "cantidadTotalRegistros" });
@@ -143,6 +143,8 @@ namespace WebApiAutores
             services.AddTransient<GeneradorEnlaces>();
             services.AddTransient<HATEOASAutorFiltroAttribute>();
             services.AddSingleton<IActionContextAccessor, ActionContextAccessor>();
+
+            services.AddScoped<ServicioLlaves>();
 
         }
 
