@@ -26,6 +26,8 @@ namespace WebApiAutores.Utilidades
 
             CreateMap<ComentarioCreacionDto, Comentario>();
             CreateMap<Comentario, ComentarioDto>();
+
+            CreateMap<LlaveAPI, LlaveAPI>();
         }
 
         private List<LibroDto> MapAutorDtoLibros(Autor autor, AutorDto autorDto)
