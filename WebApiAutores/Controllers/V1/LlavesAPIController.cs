@@ -58,7 +58,7 @@ namespace WebApiAutores.Controllers.V1
 
                 if(yaTieneLlaveGratuita)
                 {
-                    return BadRequest($"El usuario ya {usuarioId} ya tiene una llave gratuita");
+                    return BadRequest($"El usuario con ID={usuarioId} ya tiene una llave gratuita");
                 }
             }
 
