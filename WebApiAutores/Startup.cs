@@ -173,6 +173,8 @@ namespace WebApiAutores
             application.UseRouting();
 
             application.UseCors();
+
+            application.UseLimitarPeticiones();
             
             application.UseAuthorization();
 
