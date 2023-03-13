@@ -121,29 +121,9 @@ namespace WebApiAutores.Middlewares
         }
 
         private bool PeticionSuperaAlgunaDeLasRestricciones(LlaveAPI llaveAPI, HttpContext httpContext)
-        {
-            //bool hayRestriccionesDeDominio=false;
-            //bool hayRestriccionesDeIp=false;
-
-            //if(llaveAPI.RestriccionesDominio == null) 
-            //{
-            //    hayRestriccionesDeDominio = false; 
-            //} else
-            //{
-            //    hayRestriccionesDeDominio = llaveAPI.RestriccionesDominio.Any();
-            //}
-
-            //if(llaveAPI.RestriccionesIP == null)
-            //{
-            //    hayRestriccionesDeIp = false;
-            //} else
-            //{
-            //    hayRestriccionesDeIp = llaveAPI.RestriccionesIP.Any();
-            //}
-
+        {            
             var hayRestricciones = llaveAPI.RestriccionesDominio.Any() || llaveAPI.RestriccionesIP.Any();
-            //var hayRestricciones = hayRestriccionesDeDominio || hayRestriccionesDeIp;
-
+            
             if (!hayRestricciones)
             {
                 return true;
