@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>FrontEnd</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <script>
+        var headers = new Headers({
+            "x-version": "1",
+            "incluirHATEOAS": "Y",
+            "X-Api-Key": "581386bd6fef4e1e989a15955cb9c1e4"
+        });
+
+        fetch('https://localhost:7237/api/autores', {headers})
+        .then(response => response.json())
+        .then(data => console.log(data));
+    </script>
+</body>
+</html>
