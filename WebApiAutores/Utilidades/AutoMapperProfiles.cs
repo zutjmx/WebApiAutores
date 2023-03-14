@@ -30,6 +30,8 @@ namespace WebApiAutores.Utilidades
             CreateMap<LlaveAPI, LlaveDTO>();
 
             CreateMap<RestriccionDominio, RestriccionDominioDTO>();
+
+            CreateMap<RestriccionIP, RestriccionIPDTO>();
         }
 
         private List<LibroDto> MapAutorDtoLibros(Autor autor, AutorDto autorDto)
