@@ -14,6 +14,7 @@ using WebApiAutores.Utilidades;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
+using WebApiAutores.Entidades;
 
 [assembly: ApiConventionType(typeof(DefaultApiConventions))]
 namespace WebApiAutores
@@ -117,7 +118,7 @@ namespace WebApiAutores
 
             services.AddAutoMapper(typeof(Startup));
 
-            services.AddIdentity<IdentityUser,IdentityRole>()
+            services.AddIdentity<Usuario,IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 

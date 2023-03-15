@@ -8,6 +8,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using WebApiAutores.DTOs;
+using WebApiAutores.Entidades;
 using WebApiAutores.Servicios;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -18,15 +19,15 @@ namespace WebApiAutores.Controllers.V1
     [ApiController]
     public class CuentasController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> userManager;
+        private readonly UserManager<Usuario> userManager;
         private readonly IConfiguration configuration;
-        private readonly SignInManager<IdentityUser> signInManager;
+        private readonly SignInManager<Usuario> signInManager;
         private readonly ServicioLlaves servicioLlaves;
 
         public CuentasController(
-            UserManager<IdentityUser> userManager,
+            UserManager<Usuario> userManager,
             IConfiguration configuration,
-            SignInManager<IdentityUser> signInManager,
+            SignInManager<Usuario> signInManager,
             ServicioLlaves servicioLlaves
             )
         {
@@ -59,7 +60,7 @@ namespace WebApiAutores.Controllers.V1
         [HttpPost("registrar", Name = "registrarUsuario")]
         public async Task<ActionResult<RespuestaAutenticacion>> Registrar([FromBody] CredencialesUsuario credencialesUsuario)
         {
-            var usuario = new IdentityUser { UserName = credencialesUsuario.Email, Email = credencialesUsuario.Email };
+            var usuario = new Usuario { UserName = credencialesUsuario.Email, Email = credencialesUsuario.Email };
             var resultado = await userManager.CreateAsync(usuario, credencialesUsuario.Password);
 
             if (resultado.Succeeded)

@@ -64,7 +64,7 @@ namespace WebApiAutores.Middlewares
             var llaveDB = await context.LlavesAPI
             .Include(x => x.RestriccionesDominio)
             .Include(x => x.RestriccionesIP)
-            //.Include(x => x.Usuario)
+            .Include(x => x.Usuario)
             .FirstOrDefaultAsync(x => x.Llave == llave);
 
             if (llaveDB == null)
@@ -97,12 +97,12 @@ namespace WebApiAutores.Middlewares
                     return;
                 }
             }
-            //else if (llaveDB.Usuario.MalaPaga)
-            //{
-            //    httpContext.Response.StatusCode = 400;
-            //    await httpContext.Response.WriteAsync("El usuario es un mala paga.");
-            //    return;
-            //}
+            else if (llaveDB.Usuario.MalaPaga)
+            {
+                httpContext.Response.StatusCode = 400;
+                await httpContext.Response.WriteAsync("El usuario es Deudor.");
+                return;
+            }
 
             var superaRestricciones = PeticionSuperaAlgunaDeLasRestricciones(llaveDB, httpContext);
 
