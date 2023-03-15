@@ -147,6 +147,8 @@ namespace WebApiAutores
 
             services.AddScoped<ServicioLlaves>();
 
+            services.AddHostedService<FacturasHostedService>();
+
         }
 
         public void Configure(IApplicationBuilder application, IWebHostEnvironment hostEnvironment, ILogger<Startup> logger)
