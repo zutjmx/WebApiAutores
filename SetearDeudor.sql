@@ -6,9 +6,9 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 -- =============================================
--- Author:		<Author,,Name>
--- Create date: <Create Date,,>
--- Description:	<Description,,>
+-- Author:		zutjmx@gmail.com
+-- Create date: 15/03/2023
+-- Description:	SP para un curso
 -- =============================================
 CREATE PROCEDURE [dbo].[SetearMalaPaga]
 	
